@@ -1,0 +1,141 @@
+
+const express = require('express');
+const { body, validationResult } = require('express-validator');
+const Screenshot = require('../models/Screenshot');
+const router = express.Router();
+
+// Upload screenshot (with optional blur)
+router.post(
+  '/upload',
+  [
+    body('userId').isString().isLength({ min: 24, max: 24 }).withMessage('Valid userId is required'),
+    body('url').isString().matches(/^data:image\//).withMessage('Valid screenshot data URL is required')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Validation failed', details: errors.array() });
+    }
+    try {
+      const { userId, attendanceId, url, blurred } = req.body;
+      // Convert userId to ObjectId if needed
+      let userObjId = userId;
+      try {``
+        const mongoose = require('mongoose');
+        if (typeof userId === 'string' && userId.length === 24) {
+          userObjId = new mongoose.Types.ObjectId(userId);
+        }
+      } catch (e) {
+        console.error('Failed to convert userId to ObjectId:', e);
+      }
+      const screenshot = new Screenshot({
+        user: userObjId,
+        attendance: attendanceId,
+        url,
+        blurred: !!blurred,
+        timestamp: new Date()
+      });
+      await screenshot.save();
+      console.log(`Screenshot saved: ${screenshot._id} for user: ${userObjId}`);
+      res.status(201).json({
+        success: true,
+        message: 'Screenshot uploaded successfully',
+        screenshot: screenshot
+      });
+    } catch (err) {
+      console.error('Screenshot upload error:', err);
+      res.status(400).json({
+        error: err.message || 'Failed to upload screenshot',
+        success: false
+      });
+    }
+  }
+);
+
+
+// Manual deletion by employee (and remove associated time if needed)
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({ error: 'Screenshot ID is required' });
+    }
+    
+    const screenshot = await Screenshot.findById(id);
+    if (!screenshot) {
+      return res.status(404).json({ error: 'Screenshot not found' });
+    }
+    
+    // Optionally, remove associated attendance time (handled in frontend or with additional logic)
+    await Screenshot.findByIdAndDelete(id);
+    
+    console.log(`Screenshot deleted: ${id}`);
+    
+    res.json({ 
+      success: true,
+      message: 'Screenshot deleted successfully' 
+    });
+  } catch (err) {
+    console.error('Screenshot deletion error:', err);
+    res.status(400).json({ 
+      error: err.message || 'Failed to delete screenshot',
+      success: false 
+    });
+  }
+});
+
+// Get screenshots for user
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+    
+    const screenshots = await Screenshot.find({ user: userId }).sort({ timestamp: -1 });
+    
+    res.json({
+      success: true,
+      count: screenshots.length,
+      screenshots: screenshots
+    });
+  } catch (err) {
+    console.error('Screenshot fetch error:', err);
+    res.status(400).json({ 
+      error: err.message || 'Failed to fetch screenshots',
+      success: false 
+    });
+  }
+});
+
+// Get screenshot by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({ error: 'Screenshot ID is required' });
+    }
+    
+    const screenshot = await Screenshot.findById(id);
+    
+    if (!screenshot) {
+      return res.status(404).json({ error: 'Screenshot not found' });
+    }
+    
+    res.json({
+      success: true,
+      screenshot: screenshot
+    });
+  } catch (err) {
+    console.error('Screenshot fetch error:', err);
+    res.status(400).json({ 
+      error: err.message || 'Failed to fetch screenshot',
+      success: false 
+    });
+  }
+});
+
+module.exports = router;
