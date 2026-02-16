@@ -5,7 +5,15 @@
 const { io } = require('socket.io-client');
 const { desktopCapturer } = require('electron');
 
-const socket = io('http://localhost:5000');
+// Read backendUrl from agent-config.json, fallback to localhost
+let backendUrl = 'http://localhost:5000';
+try {
+  const config = JSON.parse(fs.readFileSync(__dirname + '/agent-config.json', 'utf-8'));
+  if (config.backendUrl) backendUrl = config.backendUrl;
+} catch (err) {
+  // Already handled below for userId
+}
+const socket = io(backendUrl);
 
 // Always get userId from agent-config.json (Node.js/Electron compatible)
 let userId = null;
