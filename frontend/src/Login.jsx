@@ -1,6 +1,8 @@
 
 
 import React, { useState } from 'react';
+
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 import { useNavigate } from 'react-router-dom';
 
 export default function Login({ onLogin }) {
@@ -24,7 +26,7 @@ export default function Login({ onLogin }) {
     setLoading(true);
     try {
       if (isLogin) {
-        const res = await fetch('http://localhost:5000/api/user/login', {
+        const res = await fetch(`${apiUrl}/api/user/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password, role })
@@ -45,7 +47,7 @@ export default function Login({ onLogin }) {
           localStorage.setItem('workSeconds', JSON.stringify(0));
 
           // Auto punch-out previous session if needed
-          fetch('http://localhost:5000/api/attendance/punch-out', {
+          fetch(`${apiUrl}/api/attendance/punch-out`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: data.user._id })
@@ -63,7 +65,7 @@ export default function Login({ onLogin }) {
           console.log('Login error:', data.error || 'Login failed');
         }
       } else {
-        const res = await fetch('http://localhost:5000/api/user/register', {
+        const res = await fetch(`${apiUrl}/api/user/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password, role })
