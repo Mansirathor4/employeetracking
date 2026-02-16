@@ -7,8 +7,9 @@ export default function LiveViewCard() {
   const [employees, setEmployees] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [liveStreamUser, setLiveStreamUser] = useState(null);
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
   useEffect(() => {
-    fetch("http://localhost:5000/api/user/employees")
+    fetch(`${BACKEND_URL}/api/user/employees`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch employees: ' + res.status);
         return res.json();
@@ -28,7 +29,7 @@ export default function LiveViewCard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {employees.map((user, idx) => (
           <div key={user._id} className="flex flex-col items-center bg-gray-50 rounded-lg p-3 shadow" style={{cursor:'pointer',position:'relative'}}>
-            <img src={user.avatar ? `http://localhost:5000${user.avatar}` : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} alt={user.name} className="w-32 h-20 rounded-lg object-cover border-2 border-purple-200 mb-2" />
+            <img src={user.avatar ? `${BACKEND_URL}${user.avatar}` : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} alt={user.name} className="w-32 h-20 rounded-lg object-cover border-2 border-purple-200 mb-2" />
             <div className="font-semibold text-gray-800">{user.name}</div>
             <div className={`text-xs mt-1 px-2 py-1 rounded-full ${user.isActive ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{user.isActive ? "Active" : "Idle"}</div>
             <div style={{display:'flex',gap:8,marginTop:8}}>
