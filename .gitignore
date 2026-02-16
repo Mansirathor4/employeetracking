@@ -14,4 +14,4 @@ node_modules/
 *.tmp
 
 # Ignore uploads
-backend/uploads/
+# backend/uploads/

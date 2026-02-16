@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
+const { upload } = require('../index');
 const router = express.Router();
 
 // Get all employees (for admin dashboard)
@@ -20,17 +21,6 @@ router.get('/employees', async (req, res) => {
 // ...existing code...
 
 
-// Multer setup for avatar upload
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads/avatars'));
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage });
 
 // Upload avatar for existing user
 router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {

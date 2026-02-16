@@ -1,3 +1,4 @@
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 import React, { useEffect, useState } from 'react';
 import './ScreenshotGallery.css';
 
@@ -12,7 +13,7 @@ export default function ScreenshotGallery({ userId, userName, onClose }) {
     setLoading(true);
     setError(null);
     
-    fetch(`http://localhost:5000/api/screenshot/user/${userId}`)
+    fetch(`${apiUrl}/api/screenshot/user/${userId}`)
       .then(res => {
         if (!res.ok) {
           throw new Error(`Failed to fetch screenshots: ${res.status}`);
@@ -120,7 +121,7 @@ export default function ScreenshotGallery({ userId, userName, onClose }) {
             <button className="retry-button" onClick={() => {
               setLoading(true);
               setError(null);
-              fetch(`http://localhost:5000/api/screenshot/user/${userId}`)
+              fetch(`${apiUrl}/api/screenshot/user/${userId}`)
                 .then(res => res.json())
                 .then(data => {
                   const sorted = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
