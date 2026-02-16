@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+const apiUrl = import.meta.env.VITE_BACKEND_URL;
 
 export default function MyTeamCard() {
   const [open, setOpen] = useState(false);
@@ -6,7 +7,7 @@ export default function MyTeamCard() {
 
   useEffect(() => {
     if (open) {
-      fetch("http://localhost:5000/api/user/employees")
+      fetch(`${apiUrl}/api/user/employees`)
         .then((res) => res.json())
         .then((data) => setTeamMembers(data))
         .catch(() => setTeamMembers([]));
@@ -31,7 +32,7 @@ export default function MyTeamCard() {
           )}
           {teamMembers.map((member) => (
             <div key={member._id} className="flex items-center gap-4 bg-gray-50 rounded-lg p-3 shadow">
-              <img src={member.avatar ? `http://localhost:5000${member.avatar}` : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} alt={member.name} className="w-12 h-12 rounded-full border-2 border-purple-200" />
+              <img src={member.avatar ? `${apiUrl}${member.avatar}` : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} alt={member.name} className="w-12 h-12 rounded-full border-2 border-purple-200" />
               <div>
                 <div className="font-semibold text-gray-800">{member.name}</div>
                 <div className="text-sm text-gray-500">{member.role}</div>
