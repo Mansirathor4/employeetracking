@@ -1,4 +1,3 @@
-console.log('[Agent] Connecting to:', backendUrl);
 // This file is a placeholder for the Electron agent's Socket.io integration.
 // It will connect to the backend and send status updates and live frames.
 
@@ -14,6 +13,7 @@ try {
 } catch (err) {
   // Already handled below for userId
 }
+console.log('[Agent] Connecting to:', backendUrl);
 const socket = io(backendUrl);
 
 // Always get userId from agent-config.json (Node.js/Electron compatible)
