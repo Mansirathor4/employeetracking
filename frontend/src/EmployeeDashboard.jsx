@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-const BACKEND_URL = 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export default function EmployeeDashboard({ userId }) {
   const [screenshots, setScreenshots] = useState([]);
@@ -22,7 +22,7 @@ export default function EmployeeDashboard({ userId }) {
     const savedWorking = localStorage.getItem('working');
     if (savedStart && savedWorking && JSON.parse(savedWorking) && !isToday(JSON.parse(savedStart))) {
       // Auto punch-out previous session
-      fetch('http://localhost:5000/api/attendance/punch-out', {
+      fetch(`${BACKEND_URL}/api/attendance/punch-out`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
@@ -78,11 +78,11 @@ export default function EmployeeDashboard({ userId }) {
   // Fetch user profile (avatar)
   useEffect(() => {
     if (!userId) return;
-    fetch(`http://localhost:5000/api/user/profile?id=${userId}`)
+    fetch(`${BACKEND_URL}/api/user/profile?id=${userId}`)
       .then(res => res.json())
       .then(data => {
         setAvatar(data.avatar || "");
-        setAvatarPreview(data.avatar ? `http://localhost:5000${data.avatar}` : "");
+        setAvatarPreview(data.avatar ? `${BACKEND_URL}${data.avatar}` : "");
       });
   }, [userId]);
 
@@ -95,7 +95,7 @@ export default function EmployeeDashboard({ userId }) {
     formData.append('avatar', file);
     // Optionally add other fields
     formData.append('id', userId);
-    await fetch('http://localhost:5000/api/user/upload-avatar', {
+    await fetch(`${BACKEND_URL}/api/user/upload-avatar`, {
       method: 'POST',
       body: formData
     })
@@ -103,7 +103,7 @@ export default function EmployeeDashboard({ userId }) {
       .then(data => {
         if (data.avatar) {
           setAvatar(data.avatar);
-          setAvatarPreview(`http://localhost:5000${data.avatar}`);
+          setAvatarPreview(`${BACKEND_URL}${data.avatar}`);
         }
       });
   };
@@ -128,7 +128,7 @@ export default function EmployeeDashboard({ userId }) {
   // Fetch attendance from backend for real-time calendar
   useEffect(() => {
     if (!userId) return;
-    fetch(`http://localhost:5000/api/attendance/history?userId=${userId}`)
+    fetch(`${BACKEND_URL}/api/attendance/history?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
         // Map backend attendance to calendar format
@@ -144,7 +144,7 @@ export default function EmployeeDashboard({ userId }) {
       });
     // Optionally, poll every few minutes for real-time update
     const interval = setInterval(() => {
-      fetch(`http://localhost:5000/api/attendance/history?userId=${userId}`)
+      fetch(`${BACKEND_URL}/api/attendance/history?userId=${userId}`)
         .then(res => res.json())
         .then(data => {
           setAttendance(
@@ -201,7 +201,7 @@ export default function EmployeeDashboard({ userId }) {
     localStorage.setItem('workSeconds', JSON.stringify(0));
 
     // Backend punch-in API call
-    await fetch('http://localhost:5000/api/attendance/punch-in', {
+    await fetch(`${BACKEND_URL}/api/attendance/punch-in`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId })
@@ -213,13 +213,13 @@ export default function EmployeeDashboard({ userId }) {
     setWorkStop(now);
     localStorage.setItem('workStop', JSON.stringify(now));
     // Call backend punch-out API
-    await fetch('http://localhost:5000/api/attendance/punch-out', {
+    await fetch(`${BACKEND_URL}/api/attendance/punch-out`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId })
     });
     // Refresh attendance from backend
-    fetch(`http://localhost:5000/api/attendance/history?userId=${userId}`)
+    fetch(`${BACKEND_URL}/api/attendance/history?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
         setAttendance(
