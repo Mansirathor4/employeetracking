@@ -4,8 +4,9 @@ export default function AdminAttendanceReport() {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
   useEffect(() => {
-    fetch("http://localhost:5000/api/attendance/admin/all")
+    fetch(`${BACKEND_URL}/api/attendance/admin/all`)
       .then(res => res.json())
       .then(data => {
         setAttendance(data);
