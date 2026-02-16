@@ -1,7 +1,7 @@
 // This file is a placeholder for the Electron agent's Socket.io integration.
 // It will connect to the backend and send status updates and live frames.
 
-
+const fs = require('fs');
 const { io } = require('socket.io-client');
 const { desktopCapturer } = require('electron');
 
@@ -18,7 +18,7 @@ const socket = io(backendUrl);
 
 // Always get userId from agent-config.json (Node.js/Electron compatible)
 let userId = null;
-const fs = require('fs');
+// const fs = require('fs');
 try {
   const config = JSON.parse(fs.readFileSync(__dirname + '/agent-config.json', 'utf-8'));
   userId = config.userId;
@@ -33,32 +33,32 @@ setInterval(() => {
   if (userId) {
     socket.emit('status-update', { userId, status: 'online', timestamp: Date.now() });
     console.log('[Electron Agent] Status update sent for user:', userId);
-  } else {
-    console.warn('[Electron Agent] No userId for status update');
-  }
-}, 60000);
 
-// Live screen streaming every 2 seconds
-async function sendLiveFrame() {
-  if (!userId) {
-    console.warn('[Electron Agent] No userId for live frame');
-    return;
-  }
+  const fs = require('fs');
+  const { io } = require('socket.io-client');
+  const { desktopCapturer } = require('electron');
+
+  // Read backendUrl from agent-config.json, fallback to localhost
+  let backendUrl = 'http://localhost:5000';
   try {
-    const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1280, height: 720 } });
-    if (!sources[0]) {
-      console.error('[Electron Agent] No screen source for live frame');
-      return;
-    }
-    const frame = sources[0].thumbnail.toDataURL();
-    socket.emit('live-frame', { userId, frame, timestamp: Date.now() });
-    console.log('[Electron Agent] Live frame sent for user:', userId);
+    const config = JSON.parse(fs.readFileSync(__dirname + '/agent-config.json', 'utf-8'));
+    if (config.backendUrl) backendUrl = config.backendUrl;
   } catch (err) {
-    console.error('[Electron Agent] Error capturing/sending live frame:', err);
+    // Already handled below for userId
   }
-}
-setInterval(sendLiveFrame, 2000);
+  console.log('[Agent] Connecting to:', backendUrl);
+  const socket = io(backendUrl);
 
+  // Always get userId from agent-config.json (Node.js/Electron compatible)
+  let userId = null;
+  try {
+    const config = JSON.parse(fs.readFileSync(__dirname + '/agent-config.json', 'utf-8'));
+    userId = config.userId;
+    if (!userId) throw new Error('userId missing in config');
+    console.log('[Electron Agent] Loaded userId from config:', userId);
+  } catch (err) {
+    console.error('[Electron Agent] Failed to load userId from config:', err);
+  }
 socket.on('connect', () => {
   console.log('[Electron Agent] Connected to backend Socket.io');
 });
