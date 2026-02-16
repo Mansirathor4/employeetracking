@@ -5,15 +5,18 @@ const path = require('path');
 const fetch = require('node-fetch');
 const fs = require('fs');
 
-// Read userId from agent-config.json (enterprise style)
+// Read userId and backendUrl from agent-config.json (enterprise style)
 let configUserId = null;
+let backendUrl = 'http://localhost:5000';
 try {
   const config = JSON.parse(fs.readFileSync(__dirname + '/agent-config.json', 'utf-8'));
   configUserId = config.userId;
+  backendUrl = config.backendUrl || 'http://localhost:5000';
   if (!configUserId) throw new Error('userId missing in config');
   console.log('[Electron Agent] Loaded userId from config:', configUserId);
+  console.log('[Electron Agent] Loaded backendUrl from config:', backendUrl);
 } catch (err) {
-  console.error('[Electron Agent] Failed to load userId from config:', err);
+  console.error('[Electron Agent] Failed to load config:', err);
 }
 
 // Global reference to window for sending status updates
@@ -49,7 +52,8 @@ app.on('window-all-closed', () => {
 
 // --- Screenshot upload logic ---
 
-const BACKEND_URL = 'http://localhost:5000/api/screenshot/upload';
+// Use dynamic backend URL from config
+const BACKEND_URL = `${backendUrl}/api/screenshot/upload`;
 let screenshotInterval = null;
 let isCapturing = false;
 
