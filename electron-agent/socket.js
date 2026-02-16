@@ -1,3 +1,4 @@
+console.log('[Agent] Connecting to:', backendUrl);
 // This file is a placeholder for the Electron agent's Socket.io integration.
 // It will connect to the backend and send status updates and live frames.
 
