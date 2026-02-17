@@ -225,14 +225,19 @@ async function captureAndSend() {
     const frameDataUrl = `data:image/jpeg;base64,${jpegBuf.toString('base64')}`;
 
     // Emit live frame immediately
-    if (socketManager.socket && socketManager.socket.connected) {
-      socketManager.socket.emit('live-frame', {
+    const connected = socketManager.socket && socketManager.socket.connected;
+    if (connected) {
+      const payload = {
         userId: configUserId,
         frame: frameDataUrl,
         timestamp: Date.now()
-      });
+      };
+      socketManager.socket.emit('live-frame', payload);
       captureCount++;
-      if (captureCount % 10 === 0) updateTrayMenu(); // update tray every 10 frames
+      console.log(`[Agent] Frame #${captureCount} emitted (${Math.round(jpegBuf.length / 1024)}KB, socket: ${socketManager.socket.id})`);
+      if (captureCount % 10 === 0) updateTrayMenu();
+    } else {
+      console.warn('[Agent] Socket NOT connected, frame dropped. Socket state:', socketManager.socket?.connected, socketManager.socket?.id);
     }
 
     isCapturing = false;

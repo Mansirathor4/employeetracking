@@ -1,26 +1,58 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 export default function LiveStreamViewer({ userId, userName, onClose }) {
   const [frame, setFrame] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [status, setStatus] = useState('connecting'); // connecting | live | stale | error
+  const [status, setStatus] = useState('connecting');
   const [fps, setFps] = useState(0);
+  const [mode, setMode] = useState('socket'); // socket | polling
   const socketRef = useRef(null);
   const frameCountRef = useRef(0);
   const lastFrameTimeRef = useRef(0);
   const staleTimerRef = useRef(null);
+  const pollingRef = useRef(null);
 
-  // Use VITE_BACKEND_URL if set, otherwise connect to same origin (production)
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || undefined;
+  // Start HTTP polling as fallback
+  const startPolling = useCallback(() => {
+    if (pollingRef.current) return;
+    setMode('polling');
+    console.log('[LiveStreamViewer] Starting HTTP polling fallback');
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/live-frame/${userId}`);
+        const data = await res.json();
+        if (data.success && data.frame) {
+          setFrame(data.frame);
+          setStatus('live');
+          frameCountRef.current++;
+          lastFrameTimeRef.current = Date.now();
+        }
+      } catch (err) {
+        // Silent fail for polling
+      }
+    }, 3000);
+  }, [userId]);
 
-  // Mark stream as stale if no frame received within 10 seconds
+  const stopPolling = useCallback(() => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  }, []);
+
+  // If no Socket.io frame arrives within 8 seconds, switch to HTTP polling
   const resetStaleTimer = useCallback(() => {
     if (staleTimerRef.current) clearTimeout(staleTimerRef.current);
     staleTimerRef.current = setTimeout(() => {
-      setStatus('stale');
-    }, 10000);
-  }, []);
+      if (frameCountRef.current === 0) {
+        setStatus('stale');
+        startPolling();
+      }
+    }, 8000);
+  }, [startPolling]);
 
   useEffect(() => {
     if (!userId) return;
@@ -28,9 +60,11 @@ export default function LiveStreamViewer({ userId, userName, onClose }) {
     setStatus('connecting');
     setFrame(null);
     setFps(0);
+    setMode('socket');
     frameCountRef.current = 0;
 
-    // Socket.io: pass URL for dev, or undefined to auto-detect same origin in production
+    // Socket.io connection
+    const socketUrl = BACKEND_URL || undefined;
     const socketOptions = {
       reconnection: true,
       reconnectionDelay: 1000,
@@ -38,59 +72,68 @@ export default function LiveStreamViewer({ userId, userName, onClose }) {
       reconnectionAttempts: Infinity,
       transports: ['websocket', 'polling'],
     };
-    const socket = backendUrl ? io(backendUrl, socketOptions) : io(socketOptions);
+    const socket = socketUrl ? io(socketUrl, socketOptions) : io(socketOptions);
     socketRef.current = socket;
 
     socket.on('connect', () => {
       setConnected(true);
       setStatus('connecting');
-      // Join the viewer room for this specific user
       socket.emit('watch-stream', { userId });
-      console.log('[LiveStreamViewer] Connected, watching user:', userId);
+      console.log('[LiveStreamViewer] Connected via Socket.io, watching:', userId);
       resetStaleTimer();
     });
 
     socket.on('disconnect', () => {
       setConnected(false);
-      setStatus('error');
-      console.log('[LiveStreamViewer] Disconnected');
+      console.log('[LiveStreamViewer] Socket.io disconnected');
+      // Don't set error immediately - might reconnect. Start polling as backup.
+      startPolling();
     });
 
     socket.on('connect_error', (err) => {
       setConnected(false);
-      setStatus('error');
-      console.error('[LiveStreamViewer] Connection error:', err?.message);
+      console.error('[LiveStreamViewer] Socket error:', err?.message);
+      startPolling();
     });
 
     socket.on('live-frame', (data) => {
       if (data && data.userId === userId && data.frame) {
         setFrame(data.frame);
         setStatus('live');
+        setMode('socket');
         frameCountRef.current++;
         lastFrameTimeRef.current = Date.now();
+        // Got a socket frame - stop polling if it was running
+        stopPolling();
         resetStaleTimer();
       }
     });
 
-    // FPS counter - update every 2 seconds
+    // FPS counter
     const fpsInterval = setInterval(() => {
       setFps(Math.round(frameCountRef.current / 2));
       frameCountRef.current = 0;
     }, 2000);
 
+    // Also start polling immediately as a safety net (will stop once socket frames arrive)
+    const pollFallbackTimer = setTimeout(() => {
+      if (!frame) startPolling();
+    }, 5000);
+
     return () => {
       if (staleTimerRef.current) clearTimeout(staleTimerRef.current);
+      clearTimeout(pollFallbackTimer);
       clearInterval(fpsInterval);
-      // Leave the viewer room before disconnecting
+      stopPolling();
       socket.emit('stop-watching', { userId });
       socket.disconnect();
     };
     // eslint-disable-next-line
-  }, [userId, backendUrl, resetStaleTimer]);
+  }, [userId]);
 
   const statusConfig = {
     connecting: { color: '#f59e0b', label: 'Connecting...', dot: '🟡' },
-    live:       { color: '#10b981', label: `Live (${fps} fps)`, dot: '🔴' },
+    live:       { color: '#10b981', label: `Live ${mode === 'polling' ? '(poll)' : ''} (${fps} fps)`, dot: '🔴' },
     stale:      { color: '#f97316', label: 'Waiting for frames...', dot: '🟠' },
     error:      { color: '#ef4444', label: 'Disconnected', dot: '⚪' },
   };
@@ -124,27 +167,19 @@ export default function LiveStreamViewer({ userId, userName, onClose }) {
             <img
               src={frame}
               alt="Live Stream"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '70vh',
-                borderRadius: 8,
-                display: 'block',
-              }}
+              style={{ maxWidth: '100%', maxHeight: '70vh', borderRadius: 8, display: 'block' }}
             />
           ) : status === 'error' ? (
             <div style={{ color: '#ef4444', fontWeight: 600, padding: 32 }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>&#x26A0;</div>
               <div>Could not connect to the server</div>
-              <div style={{ fontSize: 12, color: '#999', marginTop: 8 }}>
-                Make sure the backend is running
-              </div>
             </div>
           ) : status === 'stale' ? (
             <div style={{ color: '#f97316', fontWeight: 600, padding: 32 }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>&#x23F3;</div>
-              <div>Waiting for the Electron agent to send frames</div>
+              <div>Searching for live frames...</div>
               <div style={{ fontSize: 12, color: '#999', marginTop: 8 }}>
-                Make sure the desktop agent is running for this employee
+                Trying HTTP polling as fallback...
               </div>
             </div>
           ) : (
