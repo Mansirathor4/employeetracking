@@ -1,10 +1,63 @@
 {
-  "name": "employee-electron-agent",
+  "name": "peopleconnect-hr-agent",
   "version": "1.0.0",
+  "description": "PeopleConnect HR - Employee Monitoring Agent",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.peopleconnecthr.agent",
+    "productName": "PeopleConnect HR Agent",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "socket.js",
+      "preload.js",
+      "index.html",
+      "activity-tracker.js",
+      "widget.js",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "agent-config.json",
+        "to": "agent-config.json"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": null
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "installerIcon": null,
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PeopleConnect HR Agent",
+      "runAfterFinish": true
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Office"
+    }
   },
   "devDependencies": {
     "electron": "^28.0.0",

@@ -6,16 +6,21 @@ const path = require('path');
 const { io } = require('socket.io-client');
 const { desktopCapturer } = require('electron');
 
-// Read config from agent-config.json
+// Read config from agent-config.json (supports packaged app)
 let config = {};
 try {
-  const configPath = path.join(__dirname, 'agent-config.json');
-  console.log('[Electron Agent] Reading config from:', configPath);
+  // In packaged app, config is in resources; in dev, it's in __dirname
+  const { app } = require('electron');
+  const configPath = path.join(
+    (app && app.isPackaged) ? process.resourcesPath : __dirname,
+    'agent-config.json'
+  );
+  console.log('[Agent Socket] Reading config from:', configPath);
   const configData = fs.readFileSync(configPath, 'utf-8');
   config = JSON.parse(configData);
-  console.log('[Electron Agent] Config loaded:', JSON.stringify(config));
+  console.log('[Agent Socket] Config loaded:', JSON.stringify(config));
 } catch (err) {
-  console.error('[Electron Agent] Failed to load config:', err.message);
+  console.error('[Agent Socket] Config error:', err.message);
 }
 
 // Set backendUrl and userId from config
