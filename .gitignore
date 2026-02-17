@@ -1,0 +1,23 @@
+# Ignore node_modules everywhere
+node_modules/
+
+# Ignore Electron binaries
+*.exe
+
+# Ignore logs and temp files
+*.log
+*.tmp
+
+# Ignore environment files with secrets
+.env
+!frontend/.env
+
+# Ignore Electron agent config (contains user-specific settings)
+electron-agent/agent-config.json
+
+# Ignore build output
+frontend/dist/
+electron-agent/dist/
+
+# Ignore uploads
+# backend/uploads/
