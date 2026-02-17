@@ -11,7 +11,8 @@ export default function LiveStreamViewer({ userId, userName, onClose }) {
   const lastFrameTimeRef = useRef(0);
   const staleTimerRef = useRef(null);
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  // Use VITE_BACKEND_URL if set, otherwise connect to same origin (production)
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || undefined;
 
   // Mark stream as stale if no frame received within 10 seconds
   const resetStaleTimer = useCallback(() => {
@@ -29,13 +30,15 @@ export default function LiveStreamViewer({ userId, userName, onClose }) {
     setFps(0);
     frameCountRef.current = 0;
 
-    const socket = io(backendUrl, {
+    // Socket.io: pass URL for dev, or undefined to auto-detect same origin in production
+    const socketOptions = {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       reconnectionAttempts: Infinity,
       transports: ['websocket', 'polling'],
-    });
+    };
+    const socket = backendUrl ? io(backendUrl, socketOptions) : io(socketOptions);
     socketRef.current = socket;
 
     socket.on('connect', () => {
@@ -133,7 +136,7 @@ export default function LiveStreamViewer({ userId, userName, onClose }) {
               <div style={{ fontSize: 36, marginBottom: 12 }}>&#x26A0;</div>
               <div>Could not connect to the server</div>
               <div style={{ fontSize: 12, color: '#999', marginTop: 8 }}>
-                Make sure the backend is running at {backendUrl}
+                Make sure the backend is running
               </div>
             </div>
           ) : status === 'stale' ? (

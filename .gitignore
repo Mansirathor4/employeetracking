@@ -11,6 +11,9 @@ node_modules/
 # Ignore environment files with secrets
 .env
 !frontend/.env
+!frontend/.env.production
+frontend/.env.development
+frontend/.env.local
 
 # Ignore Electron agent config (contains user-specific settings)
 electron-agent/agent-config.json
