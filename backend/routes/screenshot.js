@@ -130,7 +130,7 @@ router.delete('/delete/:id', async (req, res) => {
   }
 });
 
-// Get screenshots for user
+// Get screenshots for user (metadata only - no base64 data, to avoid memory/timeout issues)
 router.get('/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -139,7 +139,11 @@ router.get('/user/:userId', async (req, res) => {
       return res.status(400).json({ error: 'User ID is required' });
     }
     
-    const screenshots = await Screenshot.find({ user: userId }).sort({ timestamp: -1 });
+    // Only return metadata fields, NOT the huge base64 url field
+    const screenshots = await Screenshot.find({ user: userId })
+      .select('_id user attendance timestamp blurred')
+      .sort({ timestamp: -1 })
+      .lean();
     
     res.json({
       success: true,
@@ -148,10 +152,39 @@ router.get('/user/:userId', async (req, res) => {
     });
   } catch (err) {
     console.error('Screenshot fetch error:', err);
-    res.status(400).json({ 
+    res.status(500).json({ 
       error: err.message || 'Failed to fetch screenshots',
       success: false 
     });
+  }
+});
+
+// Get single screenshot image by ID (loads the full base64 data on demand)
+router.get('/image/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: 'Screenshot ID is required' });
+    
+    const screenshot = await Screenshot.findById(id).select('url').lean();
+    if (!screenshot) return res.status(404).json({ error: 'Screenshot not found' });
+    
+    // If the url is a data URL, extract and send as binary image
+    if (screenshot.url && screenshot.url.startsWith('data:image/')) {
+      const matches = screenshot.url.match(/^data:image\/(png|jpeg|jpg|gif);base64,(.+)$/);
+      if (matches) {
+        const ext = matches[1];
+        const data = Buffer.from(matches[2], 'base64');
+        res.set('Content-Type', `image/${ext}`);
+        res.set('Cache-Control', 'public, max-age=86400');
+        return res.send(data);
+      }
+    }
+    
+    // Fallback: return the url string
+    res.json({ url: screenshot.url });
+  } catch (err) {
+    console.error('Screenshot image fetch error:', err);
+    res.status(500).json({ error: err.message || 'Failed to fetch screenshot image' });
   }
 });
 

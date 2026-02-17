@@ -159,7 +159,7 @@ export default function ScreenshotGallery({ userId, userName, onClose }) {
                         onClick={() => setSelectedImage(shot)}
                       >
                         <img 
-                          src={shot.url} 
+                          src={`${apiUrl}/api/screenshot/image/${shot._id}`} 
                           alt={`Screenshot at ${formatDate(shot.timestamp)}`} 
                           className="screenshot-img"
                           onError={(e) => handleImageError(e, shot)}
@@ -183,7 +183,7 @@ export default function ScreenshotGallery({ userId, userName, onClose }) {
         <div className="image-viewer" onClick={() => setSelectedImage(null)}>
           <div className="image-viewer-content" onClick={e => e.stopPropagation()}>
             <button className="image-viewer-close" onClick={() => setSelectedImage(null)}>×</button>
-            <img src={selectedImage.url} alt="Full screenshot" className="image-viewer-img" />
+            <img src={`${apiUrl}/api/screenshot/image/${selectedImage._id}`} alt="Full screenshot" className="image-viewer-img" />
             <div className="image-viewer-info">
               <span>Captured: {formatDate(selectedImage.timestamp)}</span>
             </div>
