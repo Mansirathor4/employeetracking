@@ -108,6 +108,20 @@ app.use('/api/screenshot', require('./routes/screenshot'));
 app.use('/api/report', require('./routes/report'));
 app.use('/api/activitylog', require('./routes/activitylog'));
 
+// ─── Latest Frame Store (in-memory, for HTTP polling fallback) ──────────────
+const latestFrames = new Map(); // userId -> { frame, timestamp }
+
+// HTTP endpoint: get latest live frame for a user (polling fallback)
+app.get('/api/live-frame/:userId', (req, res) => {
+  const { userId } = req.params;
+  const data = latestFrames.get(userId);
+  if (data && (Date.now() - data.timestamp < 30000)) {
+    res.json({ success: true, frame: data.frame, timestamp: data.timestamp });
+  } else {
+    res.json({ success: false, message: 'No recent frame available' });
+  }
+});
+
 // SPA catch-all: serve frontend index.html for all non-API routes (React Router support)
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
@@ -127,20 +141,6 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
 });
 
-
-// ─── Latest Frame Store (in-memory, for HTTP polling fallback) ──────────────
-const latestFrames = new Map(); // userId -> { frame, timestamp }
-
-// HTTP endpoint: get latest live frame for a user (polling fallback)
-app.get('/api/live-frame/:userId', (req, res) => {
-  const { userId } = req.params;
-  const data = latestFrames.get(userId);
-  if (data && (Date.now() - data.timestamp < 30000)) {
-    res.json({ success: true, frame: data.frame, timestamp: data.timestamp });
-  } else {
-    res.json({ success: false, message: 'No recent frame available' });
-  }
-});
 
 // Socket.io events with room-based routing
 io.on('connection', (socket) => {
