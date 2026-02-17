@@ -34,6 +34,7 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
+app.use(express.json()); // <-- Move to top, before any routes or middleware
 const http = require('http').createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(http, {

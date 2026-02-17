@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Screenshot = require('../models/Screenshot');
@@ -12,6 +11,14 @@ router.post(
     body('url').isString().matches(/^data:image\//).withMessage('Valid screenshot data URL is required')
   ],
   async (req, res) => {
+    // Debug log for received values
+    console.log('Request body:', req.body);
+    console.log('Received userId:', req.body.userId);
+    if (req.body.url) {
+      console.log('Received url:', req.body.url.slice(0, 30)); // Print first 30 chars
+    } else {
+      console.log('Received url: undefined');
+    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ error: 'Validation failed', details: errors.array() });
@@ -20,13 +27,19 @@ router.post(
       const { userId, attendanceId, url, blurred } = req.body;
       // Convert userId to ObjectId if needed
       let userObjId = userId;
-      try {``
-        const mongoose = require('mongoose');
-        if (typeof userId === 'string' && userId.length === 24) {
-          userObjId = new mongoose.Types.ObjectId(userId);
-        }
-      } catch (e) {
-        console.error('Failed to convert userId to ObjectId:', e);
+      const mongoose = require('mongoose');
+      if (typeof userId === 'string' && userId.length === 24) {
+        userObjId = new mongoose.Types.ObjectId(userId);
+      }
+      // Check if user exists
+      const User = require('../models/User');
+      const userExists = await User.findById(userObjId);
+      if (!userExists) {
+        return res.status(400).json({ error: 'User not found', details: [{ path: 'userId', msg: 'User does not exist' }] });
+      }
+      // Validate screenshot data URL
+      if (!url || typeof url !== 'string' || !url.startsWith('data:image/')) {
+        return res.status(400).json({ error: 'Invalid screenshot data URL', details: [{ path: 'url', msg: 'Valid screenshot data URL is required' }] });
       }
       const screenshot = new Screenshot({
         user: userObjId,
