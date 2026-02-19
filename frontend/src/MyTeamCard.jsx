@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
+=======
+const apiUrl = import.meta.env.VITE_BACKEND_URL || '';
+>>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 
 export default function MyTeamCard() {
   const [open, setOpen] = useState(false);

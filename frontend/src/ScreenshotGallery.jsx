@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
+=======
+const apiUrl = import.meta.env.VITE_BACKEND_URL || '';
+>>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 import React, { useEffect, useState } from 'react';
 import './ScreenshotGallery.css';
 
@@ -159,7 +163,11 @@ export default function ScreenshotGallery({ userId, userName, onClose }) {
                         onClick={() => setSelectedImage(shot)}
                       >
                         <img 
+<<<<<<< HEAD
                           src={shot.url} 
+=======
+                          src={`${apiUrl}/api/screenshot/image/${shot._id}`} 
+>>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
                           alt={`Screenshot at ${formatDate(shot.timestamp)}`} 
                           className="screenshot-img"
                           onError={(e) => handleImageError(e, shot)}
@@ -183,7 +191,11 @@ export default function ScreenshotGallery({ userId, userName, onClose }) {
         <div className="image-viewer" onClick={() => setSelectedImage(null)}>
           <div className="image-viewer-content" onClick={e => e.stopPropagation()}>
             <button className="image-viewer-close" onClick={() => setSelectedImage(null)}>×</button>
+<<<<<<< HEAD
             <img src={selectedImage.url} alt="Full screenshot" className="image-viewer-img" />
+=======
+            <img src={`${apiUrl}/api/screenshot/image/${selectedImage._id}`} alt="Full screenshot" className="image-viewer-img" />
+>>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
             <div className="image-viewer-info">
               <span>Captured: {formatDate(selectedImage.timestamp)}</span>
             </div>

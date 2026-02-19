@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 
+<<<<<<< HEAD
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
+=======
+const apiUrl = import.meta.env.VITE_BACKEND_URL || '';
+>>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 import { useNavigate } from 'react-router-dom';
 
 export default function Login({ onLogin }) {

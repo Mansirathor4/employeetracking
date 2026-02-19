@@ -7,7 +7,11 @@ export default function LiveViewCard() {
   const [employees, setEmployees] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [liveStreamUser, setLiveStreamUser] = useState(null);
+<<<<<<< HEAD
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+=======
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+>>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/user/employees`)
       .then(res => {

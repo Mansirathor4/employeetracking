@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 
+<<<<<<< HEAD
+=======
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+
+>>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 export default function AdminActivityLogs({ userId }) {
   const [logs, setLogs] = useState([]);
   const [ratio, setRatio] = useState({ online: 0, idle: 0, offline: 0, total: 0 });
@@ -8,12 +13,17 @@ export default function AdminActivityLogs({ userId }) {
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
+<<<<<<< HEAD
     fetch(`http://localhost:5000/api/activitylog/user/${userId}`)
+=======
+    fetch(`${BACKEND_URL}/api/activitylog/user/${userId}`)
+>>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
       .then(res => res.json())
       .then(data => {
         setLogs(data);
         setLoading(false);
       });
+<<<<<<< HEAD
     fetch(`http://localhost:5000/api/activitylog/user/${userId}/ratio`)
       .then(res => res.json())
       .then(data => setRatio(data));
@@ -71,6 +81,9 @@ export default function AdminActivityLogs({ userId }) {
         setLoading(false);
       });
     fetch(`http://localhost:5000/api/activitylog/user/${userId}/ratio`)
+=======
+    fetch(`${BACKEND_URL}/api/activitylog/user/${userId}/ratio`)
+>>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
       .then(res => res.json())
       .then(data => setRatio(data));
   }, [userId]);
