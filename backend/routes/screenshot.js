@@ -1,15 +1,39 @@
 const express = require('express');
-<<<<<<< HEAD
 const { body, validationResult } = require('express-validator');
-=======
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 const Screenshot = require('../models/Screenshot');
 const router = express.Router();
+// Serve screenshot image as binary from base64 data URL
+router.get('/image/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const screenshot = await Screenshot.findById(id);
+    if (!screenshot) {
+      return res.status(404).send('Screenshot not found');
+    }
+    // The url field contains a data URL (base64), not a file path
+    if (screenshot.url && screenshot.url.startsWith('data:image/')) {
+      const matches = screenshot.url.match(/^data:(image\/\w+);base64,(.+)$/);
+      if (!matches) return res.status(400).send('Invalid image data');
+      const type = matches[1];
+      const data = matches[2];
+      const img = Buffer.from(data, 'base64');
+      res.writeHead(200, {
+        'Content-Type': type,
+        'Content-Length': img.length
+      });
+      return res.end(img);
+    } else {
+      return res.status(400).send('No image data');
+    }
+  } catch (err) {
+    console.error('Image fetch error:', err);
+    res.status(500).send('Server error');
+  }
+});
 
 // Upload screenshot (with optional blur)
 router.post(
   '/upload',
-<<<<<<< HEAD
   [
     body('userId').isString().isLength({ min: 24, max: 24 }).withMessage('Valid userId is required'),
     body('url').isString().matches(/^data:image\//).withMessage('Valid screenshot data URL is required')
@@ -35,83 +59,16 @@ router.post(
       if (typeof userId === 'string' && userId.length === 24) {
         userObjId = new mongoose.Types.ObjectId(userId);
       }
-=======
-  async (req, res) => {
-    try {
-      console.log('[Screenshot Upload] Raw req.body:', JSON.stringify(req.body).slice(0, 200));
-      const { userId, attendanceId, url, blurred } = req.body;
-      
-      console.log('[Screenshot Upload] Destructured values:');
-      console.log('  userId:', userId, 'type:', typeof userId);
-      console.log('  url length:', url ? url.length : 'undefined');
-      console.log('  blurred:', blurred);
-      
-      // Validate userId
-      if (!userId || typeof userId !== 'string') {
-        console.log('[Screenshot Upload] Validation failed: userId is not valid string');
-        return res.status(400).json({ 
-          error: 'Validation failed', 
-          details: [{ path: 'userId', msg: 'userId must be a valid string' }] 
-        });
-      }
-      
-      if (userId.length !== 24) {
-        return res.status(400).json({ 
-          error: 'Validation failed', 
-          details: [{ path: 'userId', msg: `userId must be exactly 24 characters (got ${userId.length})` }] 
-        });
-      }
-      
-      // Validate screenshot data URL
-      if (!url || typeof url !== 'string') {
-        return res.status(400).json({ 
-          error: 'Validation failed', 
-          details: [{ path: 'url', msg: 'url must be a valid string' }] 
-        });
-      }
-      
-      if (!url.startsWith('data:image/')) {
-        return res.status(400).json({ 
-          error: 'Validation failed', 
-          details: [{ path: 'url', msg: 'url must be a valid data URL starting with "data:image/"' }] 
-        });
-      }
-      
-      // Convert userId to ObjectId
-      const mongoose = require('mongoose');
-      let userObjId;
-      try {
-        userObjId = new mongoose.Types.ObjectId(userId);
-      } catch (err) {
-        return res.status(400).json({ 
-          error: 'Validation failed', 
-          details: [{ path: 'userId', msg: 'userId is not a valid MongoDB ObjectId' }] 
-        });
-      }
-      
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
       // Check if user exists
       const User = require('../models/User');
       const userExists = await User.findById(userObjId);
       if (!userExists) {
-<<<<<<< HEAD
         return res.status(400).json({ error: 'User not found', details: [{ path: 'userId', msg: 'User does not exist' }] });
       }
       // Validate screenshot data URL
       if (!url || typeof url !== 'string' || !url.startsWith('data:image/')) {
         return res.status(400).json({ error: 'Invalid screenshot data URL', details: [{ path: 'url', msg: 'Valid screenshot data URL is required' }] });
       }
-=======
-        console.log('[Screenshot Upload] User not found:', userObjId);
-        return res.status(400).json({ 
-          error: 'User not found', 
-          details: [{ path: 'userId', msg: 'User does not exist in database' }] 
-        });
-      }
-      
-      console.log('[Screenshot Upload] User found, saving screenshot...');
-      
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
       const screenshot = new Screenshot({
         user: userObjId,
         attendance: attendanceId,
@@ -119,28 +76,16 @@ router.post(
         blurred: !!blurred,
         timestamp: new Date()
       });
-<<<<<<< HEAD
       await screenshot.save();
       console.log(`Screenshot saved: ${screenshot._id} for user: ${userObjId}`);
-=======
-      
-      await screenshot.save();
-      console.log(`[Screenshot Upload] Screenshot saved: ${screenshot._id} for user: ${userObjId}`);
-      
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
       res.status(201).json({
         success: true,
         message: 'Screenshot uploaded successfully',
         screenshot: screenshot
       });
     } catch (err) {
-<<<<<<< HEAD
       console.error('Screenshot upload error:', err);
       res.status(400).json({
-=======
-      console.error('[Screenshot Upload] Error:', err);
-      res.status(500).json({
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
         error: err.message || 'Failed to upload screenshot',
         success: false
       });
@@ -181,11 +126,7 @@ router.delete('/delete/:id', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 // Get screenshots for user
-=======
-// Get screenshots for user (metadata only - no base64 data, to avoid memory/timeout issues)
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 router.get('/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -194,15 +135,7 @@ router.get('/user/:userId', async (req, res) => {
       return res.status(400).json({ error: 'User ID is required' });
     }
     
-<<<<<<< HEAD
     const screenshots = await Screenshot.find({ user: userId }).sort({ timestamp: -1 });
-=======
-    // Only return metadata fields, NOT the huge base64 url field
-    const screenshots = await Screenshot.find({ user: userId })
-      .select('_id user attendance timestamp blurred')
-      .sort({ timestamp: -1 })
-      .lean();
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
     
     res.json({
       success: true,
@@ -211,49 +144,13 @@ router.get('/user/:userId', async (req, res) => {
     });
   } catch (err) {
     console.error('Screenshot fetch error:', err);
-<<<<<<< HEAD
     res.status(400).json({ 
-=======
-    res.status(500).json({ 
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
       error: err.message || 'Failed to fetch screenshots',
       success: false 
     });
   }
 });
 
-<<<<<<< HEAD
-=======
-// Get single screenshot image by ID (loads the full base64 data on demand)
-router.get('/image/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!id) return res.status(400).json({ error: 'Screenshot ID is required' });
-    
-    const screenshot = await Screenshot.findById(id).select('url').lean();
-    if (!screenshot) return res.status(404).json({ error: 'Screenshot not found' });
-    
-    // If the url is a data URL, extract and send as binary image
-    if (screenshot.url && screenshot.url.startsWith('data:image/')) {
-      const matches = screenshot.url.match(/^data:image\/(png|jpeg|jpg|gif);base64,(.+)$/);
-      if (matches) {
-        const ext = matches[1];
-        const data = Buffer.from(matches[2], 'base64');
-        res.set('Content-Type', `image/${ext}`);
-        res.set('Cache-Control', 'public, max-age=86400');
-        return res.send(data);
-      }
-    }
-    
-    // Fallback: return the url string
-    res.json({ url: screenshot.url });
-  } catch (err) {
-    console.error('Screenshot image fetch error:', err);
-    res.status(500).json({ error: err.message || 'Failed to fetch screenshot image' });
-  }
-});
-
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 // Get screenshot by ID
 router.get('/:id', async (req, res) => {
   try {

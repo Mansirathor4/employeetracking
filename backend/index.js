@@ -34,27 +34,19 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-<<<<<<< HEAD
-app.use(express.json()); // <-- Move to top, before any routes or middleware
-=======
 // Increase JSON body size limit to handle large screenshot data URLs (base64 encoded)
 app.use(express.json({ limit: '50mb' }));
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 const http = require('http').createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(http, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST']
-<<<<<<< HEAD
-  }
-=======
   },
   pingInterval: 25000,
   pingTimeout: 60000,
   transports: ['websocket', 'polling'],
   maxHttpBufferSize: 100 * 1024 * 1024 // 100MB for large screenshot payloads
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 });
 const PORT = process.env.PORT || 5000;
 
@@ -68,10 +60,6 @@ const Report = require('./models/Report');
 
 
 app.use(cors());
-<<<<<<< HEAD
-app.use(express.json());
-=======
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -87,10 +75,6 @@ app.use((err, req, res, next) => {
 });
 
 
-<<<<<<< HEAD
-app.get('/', (req, res) => {
-  res.send('Employee Tracking System Backend');
-=======
 // Serve frontend build (production: Render serves both backend + frontend from one service)
 const frontendDistPath = path.join(__dirname, '..', 'frontend', 'dist');
 app.use(express.static(frontendDistPath));
@@ -103,13 +87,10 @@ app.get('/', (req, res) => {
   } else {
     res.send('Employee Tracking System Backend - API is running');
   }
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 });
-
 
 // Serve uploaded avatars statically
 app.use('/uploads/avatars', express.static(require('path').join(__dirname, 'uploads/avatars')));
-
 
 // Log all requests
 app.use((req, res, next) => {
@@ -125,8 +106,6 @@ app.use('/api/screenshot', require('./routes/screenshot'));
 app.use('/api/report', require('./routes/report'));
 app.use('/api/activitylog', require('./routes/activitylog'));
 
-<<<<<<< HEAD
-=======
 // ─── Latest Frame Store (in-memory, for HTTP polling fallback) ──────────────
 const latestFrames = new Map(); // userId -> { frame, timestamp }
 
@@ -150,11 +129,9 @@ app.get('*', (req, res, next) => {
   if (require('fs').existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    next();
+    next();                                                         
   }
 });
-
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
 // Global error handler
 app.use((err, req, res, next) => {
   logger.error(`${err.message} (url: ${req.originalUrl})`);
@@ -162,21 +139,6 @@ app.use((err, req, res, next) => {
 });
 
 
-<<<<<<< HEAD
-// Socket.io events
-io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
-  socket.on('status-update', (data) => {
-    // Broadcast status update to admins
-    io.emit('status-update', data);
-  });
-  socket.on('live-frame', (frame) => {
-    // Broadcast live screen frame to admins
-    io.emit('live-frame', frame);
-  });
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-=======
 // Socket.io events with room-based routing
 io.on('connection', (socket) => {
   console.log('[Socket.io] Client connected:', socket.id, 'from:', socket.handshake.headers.origin || 'unknown');
@@ -231,9 +193,9 @@ io.on('connection', (socket) => {
     console.log('[Socket.io] Disconnected:', socket.id, 'reason:', reason);
   });
 
+
   socket.on('error', (err) => {
     console.error('[Socket.io] Error:', err);
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
   });
 });
 

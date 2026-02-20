@@ -1,5 +1,15 @@
 {
-<<<<<<< HEAD
+  "name": "employeetracking",
+  "version": "1.0.0",
+  "description": "PeopleConnect HR - Employee Tracking System",
+  "scripts": {
+    "install-all": "cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd backend && node index.js",
+    "render-build": "cd backend && npm install && cd ../frontend && npm install && npm run build",
+    "dev:backend": "cd backend && node index.js",
+    "dev:frontend": "cd frontend && npm run dev"
+  },
   "dependencies": {
     "express-validator": "^7.3.1",
     "http": "^0.0.1-security",
@@ -13,21 +23,8 @@
   "devDependencies": {
     "electron": "^40.4.0",
     "nodemon": "^3.1.11"
-=======
-  "name": "employeetracking",
-  "version": "1.0.0",
-  "description": "PeopleConnect HR - Employee Tracking System",
-  "scripts": {
-    "install-all": "cd backend && npm install && cd ../frontend && npm install",
-    "build": "cd frontend && npm install && npm run build",
-    "start": "cd backend && node index.js",
-    "render-build": "cd backend && npm install && cd ../frontend && npm install && npm run build",
-    "dev:backend": "cd backend && node index.js",
-    "dev:frontend": "cd frontend && npm run dev"
   },
-  "dependencies": {},
   "engines": {
     "node": ">=18.0.0"
->>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
   }
 }
