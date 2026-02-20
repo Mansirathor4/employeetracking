@@ -37,6 +37,7 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
 });
 
 // Register with avatar upload
+const generateAndEmailAgentConfig = require('../utils/emailAgentConfig');
 router.post('/register', upload.single('avatar'), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -50,12 +51,18 @@ router.post('/register', upload.single('avatar'), async (req, res) => {
 
     // Email agent config if employee
     if (role === 'employee') {
-      const generateAndEmailAgentConfig = require('../utils/emailAgentConfig');
-      generateAndEmailAgentConfig(user);
+      console.log(`[Register] Generating and emailing agent config for ${email} (${user._id})`);
+      try {
+        await generateAndEmailAgentConfig(user);
+        console.log(`[Register] Email sent to ${email}`);
+      } catch (emailErr) {
+        console.error(`[Register] Failed to send config email to ${email}:`, emailErr);
+      }
     }
 
     res.status(201).json({ message: 'User registered', user });
   } catch (err) {
+    console.error('[Register] Registration error:', err);
     res.status(400).json({ error: err.message });
   }
 });
