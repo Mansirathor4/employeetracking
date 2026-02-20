@@ -47,6 +47,13 @@ router.post('/register', upload.single('avatar'), async (req, res) => {
     }
     const user = new User({ name, email, password: hashedPassword, role, avatar });
     await user.save();
+
+    // Email agent config if employee
+    if (role === 'employee') {
+      const generateAndEmailAgentConfig = require('../utils/emailAgentConfig');
+      generateAndEmailAgentConfig(user);
+    }
+
     res.status(201).json({ message: 'User registered', user });
   } catch (err) {
     res.status(400).json({ error: err.message });
