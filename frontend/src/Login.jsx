@@ -16,6 +16,7 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agentMissing, setAgentMissing] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState(null); // For agent modal navigation
 
   const AGENT_CHECK_URL = 'http://localhost:56789/agent-status';
 
@@ -46,7 +47,6 @@ export default function Login({ onLogin }) {
           localStorage.setItem('role', data.user.role || role);
 
           // --- Timer/attendance reset logic on login ---
-          // Always reset timer state on login
           localStorage.setItem('working', JSON.stringify(false));
           localStorage.setItem('workStart', JSON.stringify(null));
           localStorage.setItem('workStop', JSON.stringify(null));
@@ -61,19 +61,23 @@ export default function Login({ onLogin }) {
 
           // Only check for agent if employee
           if ((data.user.role || role) === 'employee') {
+            // Only check agent after successful employee login
             fetch(AGENT_CHECK_URL)
               .then(res => res.json())
               .then(agentData => {
                 if (!agentData.running) {
                   setAgentMissing(true);
+                  setPendingUserId(data.user._id);
                 } else {
                   setAgentMissing(false);
+                  setPendingUserId(null);
                   onLogin(data.user._id);
                   navigate('/employee');
                 }
               })
               .catch(() => {
                 setAgentMissing(true);
+                setPendingUserId(data.user._id);
               });
           } else {
             onLogin(data.user._id);
@@ -84,6 +88,7 @@ export default function Login({ onLogin }) {
           console.log('Login error:', data.error || 'Login failed');
         }
       } else {
+        // Registration flow: do NOT check agent, do NOT show modal
         const res = await fetch(`${apiUrl}/api/user/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -107,9 +112,19 @@ export default function Login({ onLogin }) {
     setLoading(false);
   };
 
+  // Handler for closing the modal after agent is installed
+  const handleModalClose = () => {
+    setAgentMissing(false);
+    if (pendingUserId) {
+      onLogin(pendingUserId);
+      navigate('/employee');
+      setPendingUserId(null);
+    }
+  };
+
   return (
     <>
-      <AgentRequiredModal show={agentMissing} />
+      <AgentRequiredModal show={agentMissing} onClose={handleModalClose} />
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
         <div className="w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-0 md:gap-8 p-4">
         {/* Left Illustration and Heading */}
