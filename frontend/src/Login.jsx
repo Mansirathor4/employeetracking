@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
 import { useNavigate } from 'react-router-dom';
 import AgentRequiredModal from './AgentRequiredModal';
@@ -20,19 +20,7 @@ export default function Login({ onLogin }) {
   const AGENT_CHECK_URL = 'http://localhost:56789/agent-status';
 
   // Only check for agent if logging in as employee
-  useEffect(() => {
-    if (isLogin && role === 'employee') {
-      fetch(AGENT_CHECK_URL)
-        .then(res => res.json())
-        .then(data => {
-          if (!data.running) setAgentMissing(true);
-          else setAgentMissing(false);
-        })
-        .catch(() => setAgentMissing(true));
-    } else {
-      setAgentMissing(false);
-    }
-  }, [isLogin, role]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,12 +59,25 @@ export default function Login({ onLogin }) {
             body: JSON.stringify({ userId: data.user._id })
           });
 
-          onLogin(data.user._id);
-          // Redirect to dashboard after login
-          if ((data.user.role || role) === 'admin') {
-            navigate('/admin');
+          // Only check for agent if employee
+          if ((data.user.role || role) === 'employee') {
+            fetch(AGENT_CHECK_URL)
+              .then(res => res.json())
+              .then(agentData => {
+                if (!agentData.running) {
+                  setAgentMissing(true);
+                } else {
+                  setAgentMissing(false);
+                  onLogin(data.user._id);
+                  navigate('/employee');
+                }
+              })
+              .catch(() => {
+                setAgentMissing(true);
+              });
           } else {
-            navigate('/employee');
+            onLogin(data.user._id);
+            navigate('/admin');
           }
         } else {
           setError(data.error || 'Login failed');
