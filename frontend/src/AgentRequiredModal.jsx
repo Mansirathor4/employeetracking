@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 const AGENT_CHECK_URL = 'http://localhost:56789/agent-status'; // Example: Electron agent could serve a local endpoint
-const AGENT_DOWNLOAD_URL = 'https://yourdomain.com/downloads/employee-agent-installer.exe'; // Change to your actual download link
+const AGENT_DOWNLOAD_URL = 'https://github.com/Mansirathor4/employeetracking/releases/download/v1.0.0/PeopleConnect.HR.Agent.Setup.1.0.0.exe'; // Secure GitHub release link
 
 export default function AgentRequiredModal({ show, onClose }) {
   if (!show) return null;
