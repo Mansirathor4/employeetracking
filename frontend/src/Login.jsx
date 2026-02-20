@@ -16,7 +16,7 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agentMissing, setAgentMissing] = useState(false);
-  const [pendingUserId, setPendingUserId] = useState(null); // For agent modal navigation
+  const [pendingUserId, setPendingUserId] = useState(null); // Only set after successful employee login
 
   const AGENT_CHECK_URL = 'http://localhost:56789/agent-status';
 
@@ -66,8 +66,8 @@ export default function Login({ onLogin }) {
               .then(res => res.json())
               .then(agentData => {
                 if (!agentData.running) {
-                  setAgentMissing(true);
                   setPendingUserId(data.user._id);
+                  setAgentMissing(true);
                 } else {
                   setAgentMissing(false);
                   setPendingUserId(null);
@@ -76,8 +76,8 @@ export default function Login({ onLogin }) {
                 }
               })
               .catch(() => {
-                setAgentMissing(true);
                 setPendingUserId(data.user._id);
+                setAgentMissing(true);
               });
           } else {
             onLogin(data.user._id);
@@ -124,7 +124,10 @@ export default function Login({ onLogin }) {
 
   return (
     <>
-      <AgentRequiredModal show={agentMissing} onClose={handleModalClose} />
+      {/* Only show modal if agentMissing is true AND pendingUserId is set (i.e., after successful employee login) */}
+      {agentMissing && pendingUserId && (
+        <AgentRequiredModal show={true} onClose={handleModalClose} />
+      )}
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
         <div className="w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-0 md:gap-8 p-4">
         {/* Left Illustration and Heading */}
