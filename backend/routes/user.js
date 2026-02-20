@@ -49,18 +49,16 @@ router.post('/register', upload.single('avatar'), async (req, res) => {
     const user = new User({ name, email, password: hashedPassword, role, avatar });
     await user.save();
 
-    // Email agent config if employee
+    // Respond immediately
+    res.status(201).json({ message: 'User registered', user });
+
+    // Email agent config if employee (in background)
     if (role === 'employee') {
       console.log(`[Register] Generating and emailing agent config for ${email} (${user._id})`);
-      try {
-        await generateAndEmailAgentConfig(user);
-        console.log(`[Register] Email sent to ${email}`);
-      } catch (emailErr) {
-        console.error(`[Register] Failed to send config email to ${email}:`, emailErr);
-      }
+      generateAndEmailAgentConfig(user)
+        .then(() => console.log(`[Register] Email sent to ${email}`))
+        .catch(emailErr => console.error(`[Register] Failed to send config email to ${email}:`, emailErr));
     }
-
-    res.status(201).json({ message: 'User registered', user });
   } catch (err) {
     console.error('[Register] Registration error:', err);
     res.status(400).json({ error: err.message });

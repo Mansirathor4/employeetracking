@@ -4,11 +4,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import EmployeeDashboard from './EmployeeDashboard';
 import AdminDashboard from './AdminDashboard';
 import Login from './Login';
+import AgentRequiredModal from './AgentRequiredModal';
+
+const AGENT_CHECK_URL = 'http://localhost:56789/agent-status'; // Update if your agent uses a different port/path
 
 function App() {
   const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
   const [role, setRole] = useState(localStorage.getItem('role') || '');
   const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [agentMissing, setAgentMissing] = useState(false);
 
   // Utility: force logout
   const forceLogout = () => {
@@ -34,6 +38,24 @@ function App() {
     }
   }, []);
 
+  // Electron agent detection logic
+  useEffect(() => {
+    if (userId && role === 'employee' && token) {
+      fetch(AGENT_CHECK_URL)
+        .then(res => res.json())
+        .then(data => {
+          console.log('Agent check result:', data);
+          if (!data.running) setAgentMissing(true);
+        })
+        .catch((err) => {
+          console.log('Agent check failed:', err);
+          setAgentMissing(true);
+        });
+    } else {
+      setAgentMissing(false);
+    }
+  }, [userId, role, token]);
+
   // Update role on login
   const handleLogin = (id) => {
     setUserId(id);
@@ -45,24 +67,27 @@ function App() {
   const isLoggedIn = userId && role && token;
 
   return (
-    <Router>
-      <Routes>
-        {/* Always show Login page at / and /login, regardless of login state */}
-        <Route path="/" element={<Login onLogin={handleLogin} />} />
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        {/* Dashboards only accessible if logged in, else show nothing or redirect to login */}
-        <Route
-          path="/employee"
-          element={isLoggedIn && role === 'employee' ? <EmployeeDashboard userId={userId} /> : <Login onLogin={handleLogin} />}
-        />
-        <Route
-          path="/admin"
-          element={isLoggedIn && role === 'admin' ? <AdminDashboard /> : <Login onLogin={handleLogin} />}
-        />
-        {/* Catch-all: show Login page */}
-        <Route path="*" element={<Login onLogin={handleLogin} />} />
-      </Routes>
-    </Router>
+    <>
+      <AgentRequiredModal show={agentMissing} />
+      <Router>
+        <Routes>
+          {/* Always show Login page at / and /login, regardless of login state */}
+          <Route path="/" element={<Login onLogin={handleLogin} />} />
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          {/* Dashboards only accessible if logged in, else show nothing or redirect to login */}
+          <Route
+            path="/employee"
+            element={isLoggedIn && role === 'employee' ? <EmployeeDashboard userId={userId} /> : <Login onLogin={handleLogin} />}
+          />
+          <Route
+            path="/admin"
+            element={isLoggedIn && role === 'admin' ? <AdminDashboard /> : <Login onLogin={handleLogin} />}
+          />
+          {/* Catch-all: show Login page */}
+          <Route path="*" element={<Login onLogin={handleLogin} />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
 
