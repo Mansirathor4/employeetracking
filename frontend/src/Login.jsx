@@ -1,8 +1,9 @@
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
 import { useNavigate } from 'react-router-dom';
+import AgentRequiredModal from './AgentRequiredModal';
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -14,6 +15,24 @@ export default function Login({ onLogin }) {
   const [role, setRole] = useState('employee');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [agentMissing, setAgentMissing] = useState(false);
+
+  const AGENT_CHECK_URL = 'http://localhost:56789/agent-status';
+
+  // Only check for agent if logging in as employee
+  useEffect(() => {
+    if (isLogin && role === 'employee') {
+      fetch(AGENT_CHECK_URL)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.running) setAgentMissing(true);
+          else setAgentMissing(false);
+        })
+        .catch(() => setAgentMissing(true));
+    } else {
+      setAgentMissing(false);
+    }
+  }, [isLogin, role]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,8 +107,10 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
-      <div className="w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-0 md:gap-8 p-4">
+    <>
+      <AgentRequiredModal show={agentMissing} />
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
+        <div className="w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-0 md:gap-8 p-4">
         {/* Left Illustration and Heading */}
         <div className="hidden md:flex flex-col items-center justify-center flex-1 h-full">
           <img src="https://cdni.iconscout.com/illustration/premium/thumb/remote-working-team-4480472-3723272.png" alt="Workforce" className="w-80 mb-6 rounded-xl shadow-xl" />
@@ -172,5 +193,5 @@ export default function Login({ onLogin }) {
         </div>
       </div>
     </div>
-  );
-}
+  </>
+  )};
