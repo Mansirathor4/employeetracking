@@ -1,5 +1,39 @@
 directories:
   output: dist
   buildResources: build
-files: []
+appId: com.peopleconnecthr.agent
+productName: PeopleConnect HR Agent
+files:
+  - filter:
+      - main.js
+      - socket.js
+      - preload.js
+      - index.html
+      - activity-tracker.js
+      - widget.js
+      - node_modules/**/*
+extraResources:
+  - from: agent-config.json
+    to: agent-config.json
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: null
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  installerIcon: null
+  createDesktopShortcut: false
+  createStartMenuShortcut: true
+  shortcutName: PeopleConnect HR Agent
+  runAfterFinish: true
+mac:
+  target: dmg
+  category: public.app-category.business
+linux:
+  target: AppImage
+  category: Office
 electronVersion: 28.3.3

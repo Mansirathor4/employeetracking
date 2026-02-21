@@ -22,7 +22,7 @@ export default function Login({ onLogin }) {
   // New state for agent detection on page load
   const [agentDetected, setAgentDetected] = useState(false);
 
-  const AGENT_CHECK_URL = 'http://localhost:56789/agent-status';
+  const AGENT_CHECK_URL = 'http://13.233.149.34:56789/agent-status';
 
   // Detect agent on page load
   useEffect(() => {
