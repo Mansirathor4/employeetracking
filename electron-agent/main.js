@@ -11,7 +11,7 @@ const server = http.createServer((req, res) => {
   }
 });
 server.listen(DETECTION_PORT, () => {
-  console.log(`[Electron Agent] Detection server running on http://localhost:${DETECTION_PORT}/agent-status`);
+  console.log(`[Electron Agent] Detection server running on http://13.233.149.34:${DETECTION_PORT}/agent-status`);
 });
 const { app, BrowserWindow, Tray, Menu, nativeImage, desktopCapturer, ipcMain } = require('electron');
 const path = require('path');
@@ -28,7 +28,7 @@ function loadConfig() {
     const raw = fs.readFileSync(configPath, 'utf-8');
     const config = JSON.parse(raw);
     configUserId = config.userId;
-    backendUrl = config.backendUrl || 'http://localhost:5000';
+    backendUrl = config.backendUrl || 'https://your-backend-url.com';
     if (!configUserId) throw new Error('userId missing');
     console.log('[Agent] Config loaded - userId:', configUserId, 'backend:', backendUrl);
   } catch (err) {

@@ -24,7 +24,7 @@ try {
 }
 
 // Set backendUrl and userId from config
-let backendUrl = config.backendUrl || 'http://localhost:5000';
+let backendUrl = config.backendUrl || 'https://your-backend-url.com';
 let userId = config.userId || null;
 
 

@@ -9,7 +9,7 @@ function sendActivity(type, event) {
   const now = Date.now();
   if (now - lastActivity < 10000) return; // throttle to 10s
   lastActivity = now;
-  axios.post('http://localhost:5000/api/activitylog/log', {
+  axios.post('https://your-backend-url.com/api/activitylog/log', {
     userId,
     type, // 'online', 'idle', 'offline'
     event,

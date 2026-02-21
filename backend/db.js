@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/emp';
+const mongoUri = process.env.MONGO_URI || 'mongodb://your-backend-url.com:27017/emp';
 
 mongoose.connect(mongoUri)
   .then(() => console.log('[MongoDB] Connected successfully to:', mongoUri.replace(/\/\/.*@/, '//<credentials>@')))

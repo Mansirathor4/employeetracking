@@ -14,7 +14,7 @@ const OUTPUT_DIR = path.join(__dirname, '../electron-agent/generated-configs');
 
 async function main() {
   // Prefer MONGO_URI from .env, then MONGODB_URI, then fallback
-  const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/emp';
+  const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://your-backend-url.com:27017/emp';
   console.log('Connecting to MongoDB:', mongoUri);
   await mongoose.connect(mongoUri, {
     useNewUrlParser: true,

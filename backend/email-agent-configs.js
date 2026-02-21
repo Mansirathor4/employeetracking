@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/emp';
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://your-backend-url.com:27017/emp';
 
 async function main() {
   await mongoose.connect(mongoUri, {

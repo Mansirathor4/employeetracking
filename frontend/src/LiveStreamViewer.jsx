@@ -6,7 +6,7 @@ export default function LiveStreamViewer({ userId, userName, onClose }) {
   const [connected, setConnected] = useState(false);
   const [noFrameTimeout, setNoFrameTimeout] = useState(false);
   const socketRef = useRef(null);
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://your-backend-url.com';
 
   useEffect(() => {
     if (!userId) return;

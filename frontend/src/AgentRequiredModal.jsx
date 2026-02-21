@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const AGENT_CHECK_URL = 'http://localhost:56789/agent-status'; // Example: Electron agent could serve a local endpoint
+const AGENT_CHECK_URL = 'http://13.233.149.34:56789/agent-status'; // EC2 agent endpoint
 const AGENT_DOWNLOAD_URL = 'https://drive.google.com/file/d/1ttlEI8l7JpkWzIUlxhkQUbO7_hfpQltO/view?usp=sharing'; // Google Drive public sharing link
 
 export default function AgentRequiredModal({ show, onClose, agentDetected }) {

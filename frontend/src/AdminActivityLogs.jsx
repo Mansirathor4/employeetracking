@@ -14,7 +14,7 @@ export default function AdminActivityLogs({ userId }) {
     if (!userId) return;
     setLoading(true);
 <<<<<<< HEAD
-    fetch(`http://localhost:5000/api/activitylog/user/${userId}`)
+    fetch(`https://your-backend-url.com/api/activitylog/user/${userId}`)
 =======
     fetch(`${BACKEND_URL}/api/activitylog/user/${userId}`)
 >>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
@@ -24,7 +24,7 @@ export default function AdminActivityLogs({ userId }) {
         setLoading(false);
       });
 <<<<<<< HEAD
-    fetch(`http://localhost:5000/api/activitylog/user/${userId}/ratio`)
+    fetch(`https://your-backend-url.com/api/activitylog/user/${userId}/ratio`)
       .then(res => res.json())
       .then(data => setRatio(data));
   }, [userId]);
@@ -74,13 +74,13 @@ export default function AdminActivityLogs({ userId }) {
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
-    fetch(`http://localhost:5000/api/activitylog/user/${userId}`)
+    fetch(`https://your-backend-url.com/api/activitylog/user/${userId}`)
       .then(res => res.json())
       .then(data => {
         setLogs(data);
         setLoading(false);
       });
-    fetch(`http://localhost:5000/api/activitylog/user/${userId}/ratio`)
+    fetch(`https://your-backend-url.com/api/activitylog/user/${userId}/ratio`)
 =======
     fetch(`${BACKEND_URL}/api/activitylog/user/${userId}/ratio`)
 >>>>>>> f5baf6e1142e12cf81cce8165e6174e327ad0c6f
