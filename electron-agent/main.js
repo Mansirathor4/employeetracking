@@ -1,3 +1,17 @@
+// Auto-create agent-config.json if not present
+const fs = require('fs');
+const path = require('path');
+const configPath = path.join(require('electron').app && require('electron').app.isPackaged ? require('electron').app.isPackaged ? process.resourcesPath : __dirname : __dirname, 'agent-config.json');
+
+const defaultConfig = {
+  userId: "", // Leave blank for user to fill
+  backendUrl: "https://employeetracking-3.onrender.com"
+};
+
+if (!fs.existsSync(configPath)) {
+  fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2));
+  console.log('agent-config.json created automatically.');
+}
 // Agent detection HTTP server
 const http = require('http');
 const DETECTION_PORT = 56789;
@@ -14,14 +28,11 @@ server.listen(DETECTION_PORT, () => {
   console.log(`[Electron Agent] Detection server running on http://13.233.149.34:${DETECTION_PORT}/agent-status`);
 });
 const { app, BrowserWindow, Tray, Menu, nativeImage, desktopCapturer, ipcMain } = require('electron');
-const path = require('path');
 const fetch = require('node-fetch');
-const fs = require('fs');
 
 // ─── Config ─────────────────────────────────────────────────────────────────
 let configUserId = null;
 let backendUrl = 'https://employeetracking-3.onrender.com';
-const configPath = path.join(app.isPackaged ? process.resourcesPath : __dirname, 'agent-config.json');
 
 function loadConfig() {
   try {
