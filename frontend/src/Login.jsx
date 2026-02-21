@@ -16,7 +16,8 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agentMissing, setAgentMissing] = useState(false);
-  const [pendingUserId, setPendingUserId] = useState(null); // Only set after successful employee login
+  const [pendingUserId, setPendingUserId] = useState(null); // Only set after successful employee registration
+  const [showAgentModal, setShowAgentModal] = useState(false); // Only true after registration
 
   // New state for agent detection on page load
   const [agentDetected, setAgentDetected] = useState(false);
@@ -72,26 +73,10 @@ export default function Login({ onLogin }) {
             body: JSON.stringify({ userId: data.user._id })
           });
 
-          // Only check for agent if employee
+          // On login, go directly to dashboard (skip agent modal)
           if ((data.user.role || role) === 'employee') {
-            // Only check agent after successful employee login
-            fetch(AGENT_CHECK_URL)
-              .then(res => res.json())
-              .then(agentData => {
-                if (!agentData.running) {
-                  setPendingUserId(data.user._id);
-                  setAgentMissing(true);
-                } else {
-                  setAgentMissing(false);
-                  setPendingUserId(null);
-                  onLogin(data.user._id);
-                  navigate('/employee');
-                }
-              })
-              .catch(() => {
-                setPendingUserId(data.user._id);
-                setAgentMissing(true);
-              });
+            onLogin(data.user._id);
+            navigate('/employee');
           } else {
             onLogin(data.user._id);
             navigate('/admin');
@@ -101,7 +86,7 @@ export default function Login({ onLogin }) {
           console.log('Login error:', data.error || 'Login failed');
         }
       } else {
-        // Registration flow: do NOT check agent, do NOT show modal
+        // Registration flow: check agent and show modal
         const res = await fetch(`${apiUrl}/api/user/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -113,6 +98,27 @@ export default function Login({ onLogin }) {
         if (res.ok) {
           setIsLogin(true);
           setError('Registration successful! Please login.');
+          // Only show agent modal after registration
+          if (role === 'employee') {
+            fetch(AGENT_CHECK_URL)
+              .then(res => res.json())
+              .then(agentData => {
+                if (!agentData.running) {
+                  setPendingUserId(data.user._id);
+                  setAgentMissing(true);
+                  setShowAgentModal(true);
+                } else {
+                  setAgentMissing(false);
+                  setPendingUserId(null);
+                  setShowAgentModal(false);
+                }
+              })
+              .catch(() => {
+                setPendingUserId(data.user._id);
+                setAgentMissing(true);
+                setShowAgentModal(true);
+              });
+          }
         } else {
           setError(data.error || 'Registration failed');
           console.log('Register error:', data.error || 'Registration failed');
@@ -137,8 +143,8 @@ export default function Login({ onLogin }) {
 
   return (
     <>
-      {/* Only show modal if agentMissing is true AND pendingUserId is set AND agent is NOT detected */}
-      {agentMissing && pendingUserId && (
+      {/* Only show modal if showAgentModal is true AND agentMissing AND pendingUserId AND agent is NOT detected */}
+      {showAgentModal && agentMissing && pendingUserId && (
         <AgentRequiredModal show={true} onClose={handleModalClose} agentDetected={agentDetected} />
       )}
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
