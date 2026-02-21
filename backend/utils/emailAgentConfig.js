@@ -48,6 +48,17 @@ async function generateAndEmailAgentConfig(user) {
     console.log(`Sent config to ${user.email}`);
   } catch (err) {
     console.error(`Failed to send to ${user.email}:`, err.message);
+    // Log full error object for debugging
+    console.error('Full error object:', err);
+    if (err.response) {
+      console.error('SMTP response:', err.response);
+    }
+    if (err.code) {
+      console.error('SMTP error code:', err.code);
+    }
+    if (err.stack) {
+      console.error('Error stack:', err.stack);
+    }
   }
 }
 
