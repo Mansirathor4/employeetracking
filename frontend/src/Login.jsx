@@ -1,6 +1,6 @@
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
 import { useNavigate } from 'react-router-dom';
 import AgentRequiredModal from './AgentRequiredModal';
@@ -18,8 +18,21 @@ export default function Login({ onLogin }) {
   const [agentMissing, setAgentMissing] = useState(false);
   const [pendingUserId, setPendingUserId] = useState(null); // Only set after successful employee login
 
+  // New state for agent detection on page load
+  const [agentDetected, setAgentDetected] = useState(false);
+
   const AGENT_CHECK_URL = 'http://localhost:56789/agent-status';
 
+  // Detect agent on page load
+  useEffect(() => {
+    fetch(AGENT_CHECK_URL)
+      .then(res => res.json())
+      .then(agentData => {
+        if (agentData.running) setAgentDetected(true);
+        else setAgentDetected(false);
+      })
+      .catch(() => setAgentDetected(false));
+  }, []);
   // Only check for agent if logging in as employee
 
 
@@ -124,9 +137,9 @@ export default function Login({ onLogin }) {
 
   return (
     <>
-      {/* Only show modal if agentMissing is true AND pendingUserId is set (i.e., after successful employee login) */}
+      {/* Only show modal if agentMissing is true AND pendingUserId is set AND agent is NOT detected */}
       {agentMissing && pendingUserId && (
-        <AgentRequiredModal show={true} onClose={handleModalClose} />
+        <AgentRequiredModal show={true} onClose={handleModalClose} agentDetected={agentDetected} />
       )}
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
         <div className="w-full max-w-5xl flex flex-col md:flex-row items-center justify-center gap-0 md:gap-8 p-4">

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 const AGENT_CHECK_URL = 'http://localhost:56789/agent-status'; // Example: Electron agent could serve a local endpoint
 const AGENT_DOWNLOAD_URL = 'https://drive.google.com/file/d/1ttlEI8l7JpkWzIUlxhkQUbO7_hfpQltO/view?usp=sharing'; // Google Drive public sharing link
 
-export default function AgentRequiredModal({ show, onClose }) {
+export default function AgentRequiredModal({ show, onClose, agentDetected }) {
   if (!show) return null;
   return (
     <div style={{
@@ -13,7 +13,13 @@ export default function AgentRequiredModal({ show, onClose }) {
       <div style={{ background: '#fff', padding: 32, borderRadius: 12, maxWidth: 400, textAlign: 'center' }}>
         <h2>Employee Agent Required</h2>
         <p>You must download and install the Employee Tracking Agent to continue.</p>
-        <a href={AGENT_DOWNLOAD_URL} download style={{ display: 'inline-block', margin: '16px 0', padding: '12px 24px', background: '#6c63ff', color: '#fff', borderRadius: 6, textDecoration: 'none', fontWeight: 'bold' }}>Download Agent</a>
+        {agentDetected ? (
+          <div style={{ color: 'green', margin: '16px 0', fontWeight: 'bold' }}>
+            Agent already detected!
+          </div>
+        ) : (
+          <a href={AGENT_DOWNLOAD_URL} download style={{ display: 'inline-block', margin: '16px 0', padding: '12px 24px', background: '#6c63ff', color: '#fff', borderRadius: 6, textDecoration: 'none', fontWeight: 'bold' }}>Download Agent</a>
+        )}
         <p style={{ color: '#888', fontSize: 13 }}>After installing, please restart this page.</p>
         {onClose && (
           <button onClick={onClose} style={{ marginTop: 16, padding: '8px 20px', background: '#eee', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer' }}>
