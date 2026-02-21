@@ -1,3 +1,18 @@
+// Agent detection HTTP server
+const http = require('http');
+const DETECTION_PORT = 56789;
+const server = http.createServer((req, res) => {
+  if (req.url === '/agent-status') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ running: true }));
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
+server.listen(DETECTION_PORT, () => {
+  console.log(`[Electron Agent] Detection server running on http://localhost:${DETECTION_PORT}/agent-status`);
+});
 const { app, BrowserWindow, Tray, Menu, nativeImage, desktopCapturer, ipcMain } = require('electron');
 const path = require('path');
 const fetch = require('node-fetch');
